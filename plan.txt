@@ -1,0 +1,4 @@
+idea:
+
+create a scrabble solver/cheat tool
+
