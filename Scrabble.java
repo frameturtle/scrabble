@@ -7,25 +7,26 @@ public class Scrabble {
     private List<Square> filledSquares;
     public int uniqueTiles = 27;
 
-    public static final int[][] tripleWordCoordinates = new int[][]{
-            {0, 0}, {7, 0}, {14, 0}, {0, 7}, {0, 14}, {7, 14}, {14, 7}, {14, 14}
-    };
-    public static final Set<int[]> twc = new HashSet<>(Arrays.asList(tripleWordCoordinates));
-    public static final int[][] doubleWordCoordinates = new int[][]{
-            {1, 1}, {2, 2}, {3, 3}, {4, 4}, {13, 1}, {12, 2}, {11, 3}, {10, 4}, {4, 10}, {3, 11},
-            {2, 12}, {1, 13}, {10, 10}, {11, 11}, {12, 12}, {13, 13}
-    };
-    public static final Set<int[]> dwc = new HashSet<>(Arrays.asList(doubleWordCoordinates));
-    public static final int[][] tripleLetterCoordinates = new int[][]{
-            {5, 1}, {9, 1}, {1, 5}, {1, 9}, {5, 5}, {5, 9}, {9, 5}, {9, 9}, {13, 5}, {13, 9}, {5, 13}, {9, 13}
-    };
-    public static final Set<int[]> tlc = new HashSet<>(Arrays.asList(tripleLetterCoordinates));
-    public static final int[][] doubleLetterCoordinates = new int[][]{
-            {5, 1}, {0, 3}, {7, 3}, {6, 2}, {8, 2}, {11, 0}, {14, 3}, {2, 6}, {3, 7}, {2, 8}, {6, 6},
-            {8, 6}, {6, 8}, {8, 8}, {12, 6}, {11, 7}, {12, 8}, {0, 11}, {7, 11}, {14, 11}, {6, 12},
-            {8, 12}, {3, 14}, {11, 14}
-    };
-    public static final Set<int[]> dlc = new HashSet<>(Arrays.asList(doubleLetterCoordinates));
+
+// {5, 1}, {0, 3}, {7, 3}, {6, 2}, {8, 2}, {11, 0}, {14, 3}, {2, 6}, {3, 7}, {2, 8}, {6, 6},
+//            {8, 6}, {6, 8}, {8, 8}, {12, 6}, {11, 7}, {12, 8}, {0, 11}, {7, 11}, {14, 11}, {6, 12},
+//            {8, 12}, {3, 14}, {11, 14}
+    public static final List<List<Integer>> tripleWordCoordinates = List.of(
+            List.of(0, 0), List.of(7, 0), List.of(14, 0), List.of(0, 7), List.of(0, 14), List.of(7, 14), List.of(14, 7), List.of(14, 14));
+    public static final Set<List<Integer>> twc = new HashSet<>(tripleWordCoordinates);
+    public static final List<List<Integer>> doubleWordCoordinates = List.of(
+            List.of(1, 1), List.of(2, 2), List.of(3, 3), List.of(4, 4), List.of(13, 1), List.of(12, 2), List.of(11, 3), List.of(10, 4),
+            List.of(4, 10), List.of(3, 11), List.of(2, 12), List.of(1, 13), List.of(10, 10), List.of(11, 11), List.of(12, 12), List.of(13, 13));
+    public static final Set<List<Integer>> dwc = new HashSet<>(doubleWordCoordinates);
+    public static final List<List<Integer>> tripleLetterCoordinates = List.of(
+            List.of(5, 1), List.of(9, 1), List.of(1, 5), List.of(1, 9), List.of(5, 5), List.of(5, 9), List.of(9, 5), List.of(9, 9),
+            List.of(13, 5), List.of(13, 9), List.of(5, 13), List.of(9, 13));
+    public static final Set<List<Integer>> tlc = new HashSet<>(tripleLetterCoordinates);
+    public static final List<List<Integer>> doubleLetterCoordinates = List.of(
+            List.of(5, 1), List.of(0, 3), List.of(7, 3), List.of(6, 2), List.of(8, 2), List.of(11, 0), List.of(14, 3), List.of(2, 6),
+            List.of(3, 7), List.of(2, 8), List.of(6, 6), List.of(8, 6), List.of(6, 8), List.of(8, 8), List.of(12, 6), List.of(11, 7),
+            List.of(12, 8), List.of(0, 11), List.of(7, 11), List.of(14, 11), List.of(6, 12), List.of(8, 12), List.of(3, 14), List.of(11, 14));
+    public static final Set<List<Integer>> dlc = new HashSet<>(doubleLetterCoordinates);
 
     public Scrabble() {
         emptySquares = new ArrayList<>();
@@ -48,13 +49,13 @@ public class Scrabble {
 
     private Square makeSquare(int row, int col) {
         Square.Type type = Square.Type.NORMAL;
-        if (twc.contains(new int[]{row, col})) {
+        if (twc.contains(List.of(row, col))) {
             type = Square.Type.TRIPLE_WORD;
-        } else if(dwc.contains(new int[]{row, col})) {
+        } else if(dwc.contains(List.of(row, col))) {
             type = Square.Type.DOUBLE_WORD;
-        } else if(tlc.contains(new int[]{row, col})) {
+        } else if(tlc.contains(List.of(row, col))) {
             type = Square.Type.TRIPLE_LETTER;
-        } else if(dlc.contains(new int[]{row, col})) {
+        } else if(dlc.contains(List.of(row, col))) {
             type = Square.Type.DOUBLE_LETTER;
         } else if(row == 7 && col == 7) {
             type = Square.Type.START;
@@ -84,4 +85,26 @@ public class Scrabble {
     public List<Square> getFilledSquares() {
         return filledSquares;
     }
+
+    public List<Tile> getBag() {
+        return bag;
+    }
+
+    public Square[][] getBoard() {
+        return board;
+    }
+
+    public void printBoard() {
+        for (Square[] squares : board) {
+            System.out.println(Arrays.toString(squares));
+        }
+    }
+
+    public static void main(String[] args) {
+        Scrabble scrabble = new Scrabble();
+//        System.out.println(scrabble.getBag());
+        scrabble.printBoard();
+    }
 }
+
+

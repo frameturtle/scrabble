@@ -1,6 +1,16 @@
 public class Square {
     public static enum Type {
-        DOUBLE_LETTER, TRIPLE_LETTER, DOUBLE_WORD, TRIPLE_WORD, START, NORMAL;
+        DOUBLE_LETTER("DL"), TRIPLE_LETTER("TL"), DOUBLE_WORD("DW"), TRIPLE_WORD("TW"), START("* "), NORMAL("- ");
+        private final String abbreviation;
+
+        Type(String abbreviation) {
+            this.abbreviation = abbreviation;
+        }
+
+        @Override
+        public String toString() {
+            return abbreviation;
+        }
     }
 
     private final Type type;
@@ -45,6 +55,15 @@ public class Square {
         if(isEmpty) {
             this.tile = tile;
             isEmpty = false;
+        }
+    }
+
+    @Override
+    public String toString() {
+        if(getTile() == null) {
+            return type.toString();
+        } else {
+            return getTile().toString();
         }
     }
 }

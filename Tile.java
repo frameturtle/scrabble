@@ -32,7 +32,7 @@ public enum Tile {
     private final int amount;
     private final boolean isVowel;
 
-    private Tile(char letter, int value, int amount, boolean isVowel) {
+    Tile(char letter, int value, int amount, boolean isVowel) {
         this.letter = letter;
         this.value = value;
         this.amount = amount;
