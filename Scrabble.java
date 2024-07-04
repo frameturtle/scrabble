@@ -9,6 +9,7 @@ public class Scrabble {
     private HashMap<Position, Square> map;
     public int uniqueTiles = 27;
     public int rackSize = 7;
+    public List<HashSet<Word>> allWords;
 
     public static final List<List<Integer>> tripleWordCoordinates = List.of(
             List.of(0, 0), List.of(7, 0), List.of(14, 0), List.of(0, 7), List.of(0, 14), List.of(7, 14), List.of(14, 7), List.of(14, 14));
@@ -32,6 +33,7 @@ public class Scrabble {
         filledSquares = new ArrayList<>();
         rack = new ArrayList<>();
         map = new HashMap<>();
+        allWords = new ArrayList<>();
         board = makeBoard();
         bag = fillBag();
     }
@@ -95,6 +97,41 @@ public class Scrabble {
             filledSquares.add(square);
             square.setTile(tilesPlaced.get(i));
         }
+    }
+
+    private void checkWords() {
+        HashSet<Word> words = new HashSet<>();
+        // checking 'across' words
+        for (Square[] row : board) {
+            List<Square> toWord = new ArrayList<>();
+            for (Square square : row) {
+                if (square.isEmpty() && !toWord.isEmpty()) {
+                    Word word = new Word(toWord);
+
+                    words.add();
+                    toWord = new ArrayList<>();
+                } else if (square.isEmpty() && toWord.isEmpty()) {
+                    continue;
+                } else {
+                    toWord.add(square);
+                }
+            }
+        }
+        allWords.add(words);
+    }
+
+    private int checkConditions(Square square, List<Square> toWord) {
+        if(square.isEmpty()) {
+            if(toWord.isEmpty()) {
+                return 0;
+            } else if() {
+                return 1;
+            }
+        }
+    }
+
+    private boolean wordValidaty(List<Square> toWord) {
+        return true;
     }
 
     public List<Square> getEmptySquares() {

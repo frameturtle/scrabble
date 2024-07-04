@@ -79,4 +79,13 @@ public class Square {
             return Colors.YELLOW + Colors.BLACK + " " + getTile().toString() + " " + Colors.RESET;
         }
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if(o instanceof Square other) {
+            return (position.equals(other.position) && (tile.equals(other.tile)));
+        } else {
+            return false;
+        }
+    }
 }
