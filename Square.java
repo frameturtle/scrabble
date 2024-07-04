@@ -1,11 +1,11 @@
 public class Square {
     public static enum Type {
-        DOUBLE_LETTER("DL", Colors.BACKGROUND_LIGHT_BLUE),
-        TRIPLE_LETTER("TL", Colors.BACKGROUND_BLUE),
-        DOUBLE_WORD("DW", Colors.BACKGROUND_LIGHT_RED),
-        TRIPLE_WORD("TW", Colors.BACKGROUND_RED),
-        START("**", Colors.BACKGROUND_GREEN),
-        NORMAL("--", Colors.RESET);
+        DOUBLE_LETTER(" DL", Colors.BACKGROUND_LIGHT_BLUE),
+        TRIPLE_LETTER(" TL", Colors.BACKGROUND_BLUE),
+        DOUBLE_WORD(" DW", Colors.BACKGROUND_LIGHT_RED),
+        TRIPLE_WORD(" TW", Colors.BACKGROUND_RED),
+        START(" * ", Colors.BACKGROUND_GREEN),
+        NORMAL(" - ", Colors.RESET);
         private final String abbreviation;
         private final String backgroundColor;
 
@@ -24,6 +24,7 @@ public class Square {
     private boolean isEmpty;
     private final int row;
     private final int col;
+    private final Position position;
     private Tile tile;
 
     public Square(Type type, int row, int col) {
@@ -31,6 +32,7 @@ public class Square {
         isEmpty = true;
         this.row = row;
         this.col = col;
+        this.position = new Position(row, col);
         tile = null;
     }
 
@@ -54,6 +56,10 @@ public class Square {
         return col;
     }
 
+    public Position getPosition() {
+        return position;
+    }
+
     public Tile getTile() {
         return tile;
     }
@@ -70,7 +76,7 @@ public class Square {
         if(getTile() == null) {
             return type.toString();
         } else {
-            return Colors.YELLOW + getTile().toString() + Colors.RESET;
+            return Colors.YELLOW + Colors.BLACK + " " + getTile().toString() + " " + Colors.RESET;
         }
     }
 }

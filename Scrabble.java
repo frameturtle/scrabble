@@ -6,6 +6,7 @@ public class Scrabble {
     private List<Tile> rack;
     private List<Square> emptySquares;
     private List<Square> filledSquares;
+    private HashMap<Position, Square> map;
     public int uniqueTiles = 27;
     public int rackSize = 7;
 
@@ -30,6 +31,7 @@ public class Scrabble {
         emptySquares = new ArrayList<>();
         filledSquares = new ArrayList<>();
         rack = new ArrayList<>();
+        map = new HashMap<>();
         board = makeBoard();
         bag = fillBag();
     }
@@ -40,6 +42,7 @@ public class Scrabble {
             for (int j = 0; j < 15; j++) {
                 Square square = makeSquare(i, j);
                 board[i][j] = square;
+                map.put(square.getPosition(), square);
                 emptySquares.add(square);
             }
         }
@@ -77,11 +80,20 @@ public class Scrabble {
         return bag;
     }
 
-    private void fillRack() {
+    public void fillRack() {
         Random random = new Random();
         while(rack.size() < 7) {
             Tile tile = bag.remove(random.nextInt(0,bag.size()));
             rack.add(tile);
+        }
+    }
+
+    public void takeTurn(List<Tile> tilesPlaced, List<Position> placements) {
+        for (int i = 0; i < tilesPlaced.size(); i++) {
+            Square square = map.get(placements.get(i));
+            emptySquares.remove(square);
+            filledSquares.add(square);
+            square.setTile(tilesPlaced.get(i));
         }
     }
 
@@ -97,26 +109,33 @@ public class Scrabble {
         return bag;
     }
 
+    public List<Tile> getRack() {
+        return rack;
+    }
+
     public Square[][] getBoard() {
         return board;
     }
 
     public void printBoard() {
         int index = 0;
-        System.out.println("\n\t\t 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14\n");
+        System.out.println("\n\t\t 0   1   2   3   4   5   6   7   8   9  10  11  12  13  14\n");
         for (Square[] squares : board) {
             System.out.print("\t" + String.valueOf(index) + "\t");
             index++;
             for (Square square : squares) {
                 System.out.print(square + " ");
             }
-            System.out.println();
+            System.out.print("\n");
         }
     }
 
     public static void main(String[] args) {
         Scrabble scrabble = new Scrabble();
-//        System.out.println(scrabble.getBag());
+        scrabble.fillBag();
+        scrabble.fillRack();
+        List<Tile> rack = scrabble.getRack();
+        scrabble.takeTurn(rack, List.of(new Position(7,7), new Position(7, 8), new Position(7, 9), new Position(7, 10), new Position(7, 11), new Position(7, 12), new Position(7, 13)));
         scrabble.printBoard();
     }
 }
