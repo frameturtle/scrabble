@@ -11,10 +11,11 @@ public class Scrabble {
     private final HashMap<Position, Square> map;
     public int uniqueTiles = 27;
     public int rackSize = 7;
-    private final List<Set<Word>> allWords;
+    private final List<HashSet<Word>> allWords;
     private Set<String> wordList;
     private static final String wordListPath = "C:\\Users\\Katie George\\Documents\\python\\scrabble\\scrabble\\words.txt";
     private int turnNumber;
+    private int score;
 
     public static final List<List<Integer>> tripleWordCoordinates = List.of(
             List.of(0, 0), List.of(7, 0), List.of(14, 0), List.of(0, 7), List.of(0, 14), List.of(7, 14), List.of(14, 7), List.of(14, 14));
@@ -43,6 +44,7 @@ public class Scrabble {
         bag = fillBag();
         wordList = createWordList();
         turnNumber = 0;
+        score = 0;
     }
 
     /* Setup Methods */
@@ -127,6 +129,8 @@ public class Scrabble {
             System.out.println(se.getMessage() + " Please try again");
             takeBackTurn(placements);
         }
+        cullDuplicates();
+        score += calculateScore();
     }
 
     private void takeBackTurn(List<Position> placements) {
@@ -134,20 +138,19 @@ public class Scrabble {
             Square square = map.get(placement);
             square.resetTile();
         }
+        allWords.removeLast();
     }
 
     private void checkWords() throws ScrabbleException {
         HashSet<Word> words = new HashSet<>();
         allWords.add(words);
-        // checking 'across' words
-        for (Square[] row : board) {
+        for (Square[] row : board) { // checking 'across' words
             List<Square> toWord = new ArrayList<>();
             for (Square square : row) {
                 checkWordsHelper(square, toWord);
             }
         }
-        // checking 'down' words
-        for (int i = 0; i < board.length; i++) {
+        for (int i = 0; i < board.length; i++) { // checking 'down' words
             List<Square> toWord = new ArrayList<>();
             for (Square[] squares : board) {
                 checkWordsHelper(squares[i], toWord);
@@ -205,6 +208,25 @@ public class Scrabble {
         return wordList.contains(word.toString()) && word.toString().length() > 1;
     }
 
+    private void cullDuplicates() {
+        if (turnNumber > 1) {
+            HashSet<Word> words = allWords.get(turnNumber - 1);
+            System.out.println(words.size());
+            HashSet<Word> lastWords = allWords.get(turnNumber - 2);
+            words.removeIf(lastWords::contains);
+            System.out.println(words.size());
+        }
+    }
+
+    private int calculateScore() {
+        HashSet<Word> words = allWords.get(turnNumber - 1);
+        int turnScore = 0;
+        for (Word word : words) {
+            turnScore += word.getValue();
+        }
+        return turnScore;
+    }
+
     /* Getters and Setters */
 
     public List<Square> getEmptySquares() {
@@ -223,7 +245,7 @@ public class Scrabble {
         return rack;
     }
 
-    public List<Set<Word>> getAllWords() {
+    public List<HashSet<Word>> getAllWords() {
         return allWords;
     }
 
@@ -254,10 +276,10 @@ public class Scrabble {
         System.out.println("Words Played:");
         int i = 0;
         for (Set<Word> words : allWords) {
-            System.out.println("\nTurn " + String.valueOf(i));
+            System.out.println("Turn " + String.valueOf(i));
             List<Word> w = words.stream().toList();
             for (Word wo : w) {
-                System.out.println("\t" + wo);
+                System.out.println("\t" + wo.getString());
             }
             i++;
         }

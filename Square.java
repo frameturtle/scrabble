@@ -99,6 +99,10 @@ public class Square {
         return tile;
     }
 
+    public int getTimesUsed() {
+        return timesUsed;
+    }
+
     public void setTile(Tile tile) throws ScrabbleException {
         if(isEmpty) {
             this.tile = tile;
