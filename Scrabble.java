@@ -172,14 +172,14 @@ public class Scrabble {
     }
 
     private int checkConditions(Square square, List<Square> toWord) {
-        if(square.isEmpty()) {
+        if (square.isEmpty()) {
             if (toWord.isEmpty()) {
                 return 0;
-            } else if (toWord.size() == 1 && !isTileIsland(square)) {
+            } else if (toWord.size() == 1 && tileHasNeighbors(toWord.getFirst())) {
                 return 1;
-            }else if (toWord.size() == 1 && isTileIsland(square)) {
+            } else if (toWord.size() == 1 && !tileHasNeighbors(toWord.getFirst())) {
                 return 2;
-            }else if (!isWordValid(toWord)) {
+            } else if (!isWordValid(toWord)) {
                 return 2;
             } else {
                 return 3;
@@ -189,18 +189,20 @@ public class Scrabble {
         }
     }
 
-    private boolean isTileIsland(Square square) {
-        for (Position neighbor : square.getNeighbors()) {
-            if (!map.get(neighbor).isEmpty()) {
-                return false;
+    private boolean tileHasNeighbors(Square square) {
+        boolean truthValue = false;
+        for (Position neighborPOS : square.getNeighbors()) {
+            Square neighbor = map.get(neighborPOS);
+            if (!neighbor.isEmpty()) {
+                truthValue = true;
             }
         }
-        return true;
+        return truthValue;
     }
 
     private boolean isWordValid(List<Square> toWord) {
         Word word = new Word(toWord);
-        return wordList.contains(word.toString());
+        return wordList.contains(word.toString()) && word.toString().length() > 1;
     }
 
     /* Getters and Setters */
@@ -233,6 +235,8 @@ public class Scrabble {
         return board;
     }
 
+    /* Display */
+
     public void printBoard() {
         int index = 0;
         System.out.println("\n\t\t 0  1  2  3  4  5  6  7  8  9  10 11 12 13 14\n");
@@ -243,6 +247,19 @@ public class Scrabble {
                 System.out.print(square);
             }
             System.out.print("\n");
+        }
+    }
+
+    public void printAllWords() {
+        System.out.println("Words Played:");
+        int i = 0;
+        for (Set<Word> words : allWords) {
+            System.out.println("\nTurn " + String.valueOf(i));
+            List<Word> w = words.stream().toList();
+            for (Word wo : w) {
+                System.out.println("\t" + wo);
+            }
+            i++;
         }
     }
 
@@ -265,8 +282,10 @@ public class Scrabble {
         scrabble.takeTurn(rack, List.of(new Position(1, 8), new Position(1, 9), new Position(1, 10), new Position(1, 11), new Position(1, 12), new Position(1, 13)));;
         rack.clear();
         rack.add(Tile.T);
-        scrabble.takeTurn(rack, List.of(new Position(2, 8)));
         scrabble.printBoard();
+        scrabble.takeTurn(rack, List.of(new Position(13, 8)));
+        scrabble.printBoard();
+        scrabble.printAllWords();
     }
 }
 

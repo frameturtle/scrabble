@@ -4,10 +4,10 @@ import java.util.List;
 
 public class Square {
     public static enum Type {
-        DOUBLE_LETTER(" DL", Colors.BACKGROUND_LIGHT_BLUE, Colors.BLACK),
-        TRIPLE_LETTER(" TL", Colors.BACKGROUND_BLUE, Colors.BLACK),
-        DOUBLE_WORD(" DW", Colors.BACKGROUND_LIGHT_RED, Colors.BLACK),
-        TRIPLE_WORD(" TW", Colors.BACKGROUND_RED, Colors.BLACK),
+        DOUBLE_LETTER(" 2 ", Colors.BACKGROUND_LIGHT_BLUE, Colors.BLUE),
+        TRIPLE_LETTER(" 3 ", Colors.BACKGROUND_BLUE, Colors.LIGHT_BLUE),
+        DOUBLE_WORD(" 2 ", Colors.BACKGROUND_LIGHT_RED, Colors.RED),
+        TRIPLE_WORD(" 3 ", Colors.BACKGROUND_RED, Colors.LIGHT_RED),
         START(" * ", Colors.BACKGROUND_GREEN, Colors.BLACK),
         NORMAL(" - ", Colors.BACKGROUND_GRAY, Colors.GRAY);
         private final String abbreviation;
