@@ -1,22 +1,28 @@
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
+
 public class Square {
     public static enum Type {
-        DOUBLE_LETTER(" DL", Colors.BACKGROUND_LIGHT_BLUE),
-        TRIPLE_LETTER(" TL", Colors.BACKGROUND_BLUE),
-        DOUBLE_WORD(" DW", Colors.BACKGROUND_LIGHT_RED),
-        TRIPLE_WORD(" TW", Colors.BACKGROUND_RED),
-        START(" * ", Colors.BACKGROUND_GREEN),
-        NORMAL(" - ", Colors.RESET);
+        DOUBLE_LETTER(" DL", Colors.BACKGROUND_LIGHT_BLUE, Colors.BLACK),
+        TRIPLE_LETTER(" TL", Colors.BACKGROUND_BLUE, Colors.BLACK),
+        DOUBLE_WORD(" DW", Colors.BACKGROUND_LIGHT_RED, Colors.BLACK),
+        TRIPLE_WORD(" TW", Colors.BACKGROUND_RED, Colors.BLACK),
+        START(" * ", Colors.BACKGROUND_GREEN, Colors.BLACK),
+        NORMAL(" - ", Colors.BACKGROUND_GRAY, Colors.GRAY);
         private final String abbreviation;
         private final String backgroundColor;
+        private final String textColor;
 
-        Type(String abbreviation, String backgroundColor) {
+        Type(String abbreviation, String backgroundColor, String textColor) {
             this.abbreviation = abbreviation;
             this.backgroundColor = backgroundColor;
+            this.textColor = textColor;
         }
 
         @Override
         public String toString() {
-            return Colors.BLACK + backgroundColor + abbreviation + Colors.RESET;
+            return textColor + backgroundColor + abbreviation + Colors.RESET;
         }
     }
 
@@ -25,7 +31,9 @@ public class Square {
     private final int row;
     private final int col;
     private final Position position;
+    private final List<Position> neighbors;
     private Tile tile;
+    private int timesUsed;
 
     public Square(Type type, int row, int col) {
         this.type = type;
@@ -33,7 +41,30 @@ public class Square {
         this.row = row;
         this.col = col;
         this.position = new Position(row, col);
+        this.neighbors = calculateNeighbors();
         tile = null;
+        timesUsed = 0;
+    }
+
+    private List<Position> calculateNeighbors() {
+        List<Position> neighbors = new ArrayList<>();
+        if (row != 0) {
+            Position above = new Position(row - 1, col);
+            neighbors.add(above);
+        }
+        if (row != 14) {
+            Position below = new Position(row + 1, col);
+            neighbors.add(below);
+        }
+        if (col != 0) {
+            Position left = new Position(row, col - 1);
+            neighbors.add(left);
+        }
+        if (col != 14) {
+            Position right = new Position(row, col + 1);
+            neighbors.add(right);
+        }
+        return neighbors;
     }
 
     public Type getType() {
@@ -60,14 +91,29 @@ public class Square {
         return position;
     }
 
+    public List<Position> getNeighbors() {
+        return neighbors;
+    }
+
     public Tile getTile() {
         return tile;
     }
 
-    public void setTile(Tile tile) {
+    public void setTile(Tile tile) throws ScrabbleException {
         if(isEmpty) {
             this.tile = tile;
             isEmpty = false;
+            timesUsed++;
+        } else {
+            throw new ScrabbleException("Square is already occupied.");
+        }
+    }
+
+    public void resetTile() {
+        if (!isEmpty) {
+            isEmpty = true;
+            tile = null;
+            timesUsed--;
         }
     }
 

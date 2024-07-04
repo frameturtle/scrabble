@@ -7,4 +7,6 @@ public class Colors {
     public static String BACKGROUND_GREEN = "\u001B[42m";
     public static String BACKGROUND_BLUE = "\u001B[48;5;26m";
     public static String BACKGROUND_LIGHT_BLUE = "\u001B[48;5;111m";
+    public static String BACKGROUND_GRAY = "\u001B[48;5;244m";
+    public static String GRAY = "\u001B[38;5;244m";
 }

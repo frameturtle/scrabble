@@ -1,15 +1,20 @@
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.*;
 
 public class Scrabble {
-    private Square[][] board;
-    private List<Tile> bag;
-    private List<Tile> rack;
-    private List<Square> emptySquares;
-    private List<Square> filledSquares;
-    private HashMap<Position, Square> map;
+    private final Square[][] board;
+    private final List<Tile> bag;
+    private final List<Tile> rack;
+    private final List<Square> emptySquares;
+    private final List<Square> filledSquares;
+    private final HashMap<Position, Square> map;
     public int uniqueTiles = 27;
     public int rackSize = 7;
-    public List<HashSet<Word>> allWords;
+    private final List<Set<Word>> allWords;
+    private Set<String> wordList;
+    private static final String wordListPath = "C:\\Users\\Katie George\\Documents\\python\\scrabble\\scrabble\\words.txt";
+    private int turnNumber;
 
     public static final List<List<Integer>> tripleWordCoordinates = List.of(
             List.of(0, 0), List.of(7, 0), List.of(14, 0), List.of(0, 7), List.of(0, 14), List.of(7, 14), List.of(14, 7), List.of(14, 14));
@@ -36,7 +41,11 @@ public class Scrabble {
         allWords = new ArrayList<>();
         board = makeBoard();
         bag = fillBag();
+        wordList = createWordList();
+        turnNumber = 0;
     }
+
+    /* Setup Methods */
 
     private Square[][] makeBoard() {
         Square[][] board = new Square[15][15];
@@ -90,49 +99,111 @@ public class Scrabble {
         }
     }
 
+    public Set<String> createWordList() {
+        wordList = new HashSet<>();
+        try {
+            Scanner scanner = new Scanner(new File(wordListPath));
+            while (scanner.hasNext()) {
+                wordList.add(scanner.next().toUpperCase());
+            }
+        } catch (FileNotFoundException e) {
+            // this shouldn't happen as the path is a set variable
+            throw new RuntimeException(e);
+        }
+        return wordList;
+    }
+
+    /* In Game Methods */
+
     public void takeTurn(List<Tile> tilesPlaced, List<Position> placements) {
-        for (int i = 0; i < tilesPlaced.size(); i++) {
-            Square square = map.get(placements.get(i));
-            emptySquares.remove(square);
-            filledSquares.add(square);
-            square.setTile(tilesPlaced.get(i));
+        try {
+            for (int i = 0; i < tilesPlaced.size(); i++) {
+                Square square = map.get(placements.get(i));
+                square.setTile(tilesPlaced.get(i));
+            }
+            checkWords();
+            turnNumber++;
+        } catch (ScrabbleException se) {
+            System.out.println(se.getMessage() + " Please try again");
+            takeBackTurn(placements);
         }
     }
 
-    private void checkWords() {
+    private void takeBackTurn(List<Position> placements) {
+        for (Position placement : placements) {
+            Square square = map.get(placement);
+            square.resetTile();
+        }
+    }
+
+    private void checkWords() throws ScrabbleException {
         HashSet<Word> words = new HashSet<>();
+        allWords.add(words);
         // checking 'across' words
         for (Square[] row : board) {
             List<Square> toWord = new ArrayList<>();
             for (Square square : row) {
-                if (square.isEmpty() && !toWord.isEmpty()) {
-                    Word word = new Word(toWord);
-
-                    words.add();
-                    toWord = new ArrayList<>();
-                } else if (square.isEmpty() && toWord.isEmpty()) {
-                    continue;
-                } else {
-                    toWord.add(square);
-                }
+                checkWordsHelper(square, toWord);
             }
         }
-        allWords.add(words);
+        // checking 'down' words
+        for (int i = 0; i < board.length; i++) {
+            List<Square> toWord = new ArrayList<>();
+            for (Square[] squares : board) {
+                checkWordsHelper(squares[i], toWord);
+            }
+        }
+    }
+
+    private void checkWordsHelper(Square square, List<Square> toWord) throws ScrabbleException {
+        int value = checkConditions(square, toWord);
+        if (value != 0) {
+            if (value == 1) {        // found a letter from a word in a different orientation
+                toWord.clear();
+            } else if (value == 2) {        // end of the word was reached, but it was not found in the word list
+                throw new ScrabbleException("Invalid Word(s).");
+            } else if (value == 3) {        // end of the word was reached
+                allWords.get(turnNumber).add(new Word(toWord));
+                toWord.clear();
+            } else {                        // end of the word has not been reached
+                toWord.add(square);
+            }
+        }
     }
 
     private int checkConditions(Square square, List<Square> toWord) {
         if(square.isEmpty()) {
-            if(toWord.isEmpty()) {
+            if (toWord.isEmpty()) {
                 return 0;
-            } else if() {
+            } else if (toWord.size() == 1 && !isTileIsland(square)) {
                 return 1;
+            }else if (toWord.size() == 1 && isTileIsland(square)) {
+                return 2;
+            }else if (!isWordValid(toWord)) {
+                return 2;
+            } else {
+                return 3;
             }
+        } else {
+            return 4;
         }
     }
 
-    private boolean wordValidaty(List<Square> toWord) {
+    private boolean isTileIsland(Square square) {
+        for (Position neighbor : square.getNeighbors()) {
+            if (!map.get(neighbor).isEmpty()) {
+                return false;
+            }
+        }
         return true;
     }
+
+    private boolean isWordValid(List<Square> toWord) {
+        Word word = new Word(toWord);
+        return wordList.contains(word.toString());
+    }
+
+    /* Getters and Setters */
 
     public List<Square> getEmptySquares() {
         return emptySquares;
@@ -150,29 +221,51 @@ public class Scrabble {
         return rack;
     }
 
+    public List<Set<Word>> getAllWords() {
+        return allWords;
+    }
+
+    public Set<String> getWordList() {
+        return wordList;
+    }
+
     public Square[][] getBoard() {
         return board;
     }
 
     public void printBoard() {
         int index = 0;
-        System.out.println("\n\t\t 0   1   2   3   4   5   6   7   8   9  10  11  12  13  14\n");
+        System.out.println("\n\t\t 0  1  2  3  4  5  6  7  8  9  10 11 12 13 14\n");
         for (Square[] squares : board) {
-            System.out.print("\t" + String.valueOf(index) + "\t");
+            System.out.print("\t" + index + "\t");
             index++;
             for (Square square : squares) {
-                System.out.print(square + " ");
+                System.out.print(square);
             }
             System.out.print("\n");
         }
     }
 
+    /* Main */
+
     public static void main(String[] args) {
         Scrabble scrabble = new Scrabble();
         scrabble.fillBag();
         scrabble.fillRack();
-        List<Tile> rack = scrabble.getRack();
-        scrabble.takeTurn(rack, List.of(new Position(7,7), new Position(7, 8), new Position(7, 9), new Position(7, 10), new Position(7, 11), new Position(7, 12), new Position(7, 13)));
+        List<Tile> rack = new ArrayList<>();
+        rack.add(Tile.H);
+        rack.add(Tile.A);
+        rack.add(Tile.B);
+        rack.add(Tile.I);
+        rack.add(Tile.T);
+        rack.add(Tile.A);
+        rack.add(Tile.T);
+        scrabble.takeTurn(rack, List.of(new Position(1,7), new Position(2, 7), new Position(3, 7), new Position(4, 7), new Position(5, 7), new Position(6, 7), new Position(7, 7)));
+        rack.remove(Tile.H);
+        scrabble.takeTurn(rack, List.of(new Position(1, 8), new Position(1, 9), new Position(1, 10), new Position(1, 11), new Position(1, 12), new Position(1, 13)));;
+        rack.clear();
+        rack.add(Tile.T);
+        scrabble.takeTurn(rack, List.of(new Position(2, 8)));
         scrabble.printBoard();
     }
 }
