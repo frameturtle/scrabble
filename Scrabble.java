@@ -3,14 +3,12 @@ import java.util.*;
 public class Scrabble {
     private Square[][] board;
     private List<Tile> bag;
+    private List<Tile> rack;
     private List<Square> emptySquares;
     private List<Square> filledSquares;
     public int uniqueTiles = 27;
+    public int rackSize = 7;
 
-
-// {5, 1}, {0, 3}, {7, 3}, {6, 2}, {8, 2}, {11, 0}, {14, 3}, {2, 6}, {3, 7}, {2, 8}, {6, 6},
-//            {8, 6}, {6, 8}, {8, 8}, {12, 6}, {11, 7}, {12, 8}, {0, 11}, {7, 11}, {14, 11}, {6, 12},
-//            {8, 12}, {3, 14}, {11, 14}
     public static final List<List<Integer>> tripleWordCoordinates = List.of(
             List.of(0, 0), List.of(7, 0), List.of(14, 0), List.of(0, 7), List.of(0, 14), List.of(7, 14), List.of(14, 7), List.of(14, 14));
     public static final Set<List<Integer>> twc = new HashSet<>(tripleWordCoordinates);
@@ -31,6 +29,7 @@ public class Scrabble {
     public Scrabble() {
         emptySquares = new ArrayList<>();
         filledSquares = new ArrayList<>();
+        rack = new ArrayList<>();
         board = makeBoard();
         bag = fillBag();
     }
@@ -78,6 +77,14 @@ public class Scrabble {
         return bag;
     }
 
+    private void fillRack() {
+        Random random = new Random();
+        while(rack.size() < 7) {
+            Tile tile = bag.remove(random.nextInt(0,bag.size()));
+            rack.add(tile);
+        }
+    }
+
     public List<Square> getEmptySquares() {
         return emptySquares;
     }
@@ -95,8 +102,15 @@ public class Scrabble {
     }
 
     public void printBoard() {
+        int index = 0;
+        System.out.println("\n\t\t 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14\n");
         for (Square[] squares : board) {
-            System.out.println(Arrays.toString(squares));
+            System.out.print("\t" + String.valueOf(index) + "\t");
+            index++;
+            for (Square square : squares) {
+                System.out.print(square + " ");
+            }
+            System.out.println();
         }
     }
 

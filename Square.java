@@ -1,15 +1,22 @@
 public class Square {
     public static enum Type {
-        DOUBLE_LETTER("DL"), TRIPLE_LETTER("TL"), DOUBLE_WORD("DW"), TRIPLE_WORD("TW"), START("* "), NORMAL("- ");
+        DOUBLE_LETTER("DL", Colors.BACKGROUND_LIGHT_BLUE),
+        TRIPLE_LETTER("TL", Colors.BACKGROUND_BLUE),
+        DOUBLE_WORD("DW", Colors.BACKGROUND_LIGHT_RED),
+        TRIPLE_WORD("TW", Colors.BACKGROUND_RED),
+        START("**", Colors.BACKGROUND_GREEN),
+        NORMAL("--", Colors.RESET);
         private final String abbreviation;
+        private final String backgroundColor;
 
-        Type(String abbreviation) {
+        Type(String abbreviation, String backgroundColor) {
             this.abbreviation = abbreviation;
+            this.backgroundColor = backgroundColor;
         }
 
         @Override
         public String toString() {
-            return abbreviation;
+            return Colors.BLACK + backgroundColor + abbreviation + Colors.RESET;
         }
     }
 
@@ -63,7 +70,7 @@ public class Square {
         if(getTile() == null) {
             return type.toString();
         } else {
-            return getTile().toString();
+            return Colors.YELLOW + getTile().toString() + Colors.RESET;
         }
     }
 }
