@@ -11,6 +11,7 @@ public class Scrabble {
     private final List<Square> emptySquares;
     private final List<Square> filledSquares;
     private final HashMap<Position, Square> map;
+    private WordFinder wordFinder;
     public int uniqueTiles = 27;
     public int rackSize = 7;
     private final List<List<Word>> allWords;
@@ -45,6 +46,7 @@ public class Scrabble {
         board = makeBoard();
         bag = fillBag();
         wordList = createWordList();
+        wordFinder = new WordFinder(wordList);
         turnNumber = 0;
         score = 0;
     }
@@ -108,7 +110,7 @@ public class Scrabble {
         try {
             Scanner scanner = new Scanner(new File(wordListPath));
             while (scanner.hasNext()) {
-                wordList.add(scanner.next().toUpperCase());
+                wordList.add(scanner.next());
             }
         } catch (FileNotFoundException e) {
             // this shouldn't happen as the path is a set variable
@@ -118,6 +120,14 @@ public class Scrabble {
     }
 
     /* In Game Methods */
+
+    public void swap(List<Tile> tilesToSwap) {
+        for (Tile tile : tilesToSwap) {
+            rack.remove(tile);
+        }
+        fillRack();
+        turnNumber++;
+    }
 
     public void takeTurn(List<Tile> tilesPlaced, List<Position> placements) {
         try {
@@ -131,7 +141,7 @@ public class Scrabble {
             takeBackTurn(placements);
         }
         cullDuplicates();
-        score += calculateScore();
+//        score += calculateScore();
         turnNumber++;
         fillRack();
     }
@@ -145,8 +155,7 @@ public class Scrabble {
     }
 
     private void checkWords() throws ScrabbleException {
-        List<Word> words = new ArrayList<>();
-        allWords.add(words);
+        allWords.add(new ArrayList<>());
         for (Square[] row : board) { // checking 'across' words
             List<Square> toWord = new ArrayList<>();
             for (Square square : row) {
@@ -208,19 +217,16 @@ public class Scrabble {
 
     private boolean isWordValid(List<Square> toWord) {
         Word word = new Word(toWord);
-        return wordList.contains(word.toString()) && word.toString().length() > 1;
+        return wordList.contains(word.toString().toLowerCase()) && word.toString().length() > 1;
     }
 
     private void cullDuplicates() {
-        if (turnNumber >= 1) {
+        if (turnNumber >= 1 && turnNumber == allWords.size() - 1) {
             List<Word> words = allWords.get(turnNumber);
             List<Word> lastWords = allWords.get(turnNumber - 1);
             for (int i = 0; i < words.size(); i++) {
-                words.get(i).getSquares();
                 for (Word lastWord : lastWords) {
-                    System.out.println(lastWord);
                     if (words.get(i).equals(lastWord)) {
-                        System.out.println(words.get(i));
                         words.remove(i);
                         i--;
                     }
@@ -264,6 +270,10 @@ public class Scrabble {
         return wordList;
     }
 
+    public WordFinder getWordFinder() {
+        return wordFinder;
+    }
+
     public Square[][] getBoard() {
         return board;
     }
@@ -300,6 +310,14 @@ public class Scrabble {
         System.out.println("Score: " + score);
     }
 
+    public String rackString() {
+        String rackString = "";
+        for (Tile tile : rack) {
+            rackString += tile.toString();
+        }
+        return rackString.toLowerCase();
+    }
+
     /* Main */
 
     public static void main(String[] args) {
@@ -318,13 +336,18 @@ public class Scrabble {
         scrabble.printBoard();
         rack.remove(Tile.H);
         scrabble.takeTurn(rack, List.of(new Position(1, 8), new Position(1, 9), new Position(1, 10), new Position(1, 11), new Position(1, 12), new Position(1, 13)));;
-        rack.clear();
-        rack.add(Tile.S);
-        rack.add(Tile.H);
-        rack.add(Tile.Y);
         scrabble.printBoard();
-//        scrabble.takeTurn(rack, List.of(new Position(8, 7), new Position(8, 8), new Position(8, 10)));
+        rack.clear();
+        rack.add(Tile.P);
+        rack.add(Tile.A);
+        rack.add(Tile.R);
+        scrabble.takeTurn(rack, List.of(new Position(0,12), new Position(0, 13), new Position(0,14)));
+        scrabble.printBoard();
         scrabble.printAllWords();
+
+        System.out.println(scrabble.rackString());
+        System.out.println(scrabble.getWordFinder().findAnagram(scrabble.rackString()));
+
     }
 }
 
