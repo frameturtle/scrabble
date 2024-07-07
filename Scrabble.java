@@ -1,6 +1,8 @@
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.sql.SQLOutput;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Scrabble {
     private final Square[][] board;
@@ -11,7 +13,7 @@ public class Scrabble {
     private final HashMap<Position, Square> map;
     public int uniqueTiles = 27;
     public int rackSize = 7;
-    private final List<HashSet<Word>> allWords;
+    private final List<List<Word>> allWords;
     private Set<String> wordList;
     private static final String wordListPath = "C:\\Users\\Katie George\\Documents\\python\\scrabble\\scrabble\\words.txt";
     private int turnNumber;
@@ -124,13 +126,14 @@ public class Scrabble {
                 square.setTile(tilesPlaced.get(i));
             }
             checkWords();
-            turnNumber++;
         } catch (ScrabbleException se) {
             System.out.println(se.getMessage() + " Please try again");
             takeBackTurn(placements);
         }
         cullDuplicates();
         score += calculateScore();
+        turnNumber++;
+        fillRack();
     }
 
     private void takeBackTurn(List<Position> placements) {
@@ -142,7 +145,7 @@ public class Scrabble {
     }
 
     private void checkWords() throws ScrabbleException {
-        HashSet<Word> words = new HashSet<>();
+        List<Word> words = new ArrayList<>();
         allWords.add(words);
         for (Square[] row : board) { // checking 'across' words
             List<Square> toWord = new ArrayList<>();
@@ -166,7 +169,7 @@ public class Scrabble {
             } else if (value == 2) {        // end of the word was reached, but it was not found in the word list
                 throw new ScrabbleException("Invalid Word(s).");
             } else if (value == 3) {        // end of the word was reached
-                allWords.get(turnNumber).add(new Word(toWord));
+                allWords.get(turnNumber).add(new Word(new ArrayList<>(toWord)));
                 toWord.clear();
             } else {                        // end of the word has not been reached
                 toWord.add(square);
@@ -209,17 +212,25 @@ public class Scrabble {
     }
 
     private void cullDuplicates() {
-        if (turnNumber > 1) {
-            HashSet<Word> words = allWords.get(turnNumber - 1);
-            System.out.println(words.size());
-            HashSet<Word> lastWords = allWords.get(turnNumber - 2);
-            words.removeIf(lastWords::contains);
-            System.out.println(words.size());
+        if (turnNumber >= 1) {
+            List<Word> words = allWords.get(turnNumber);
+            List<Word> lastWords = allWords.get(turnNumber - 1);
+            for (int i = 0; i < words.size(); i++) {
+                words.get(i).getSquares();
+                for (Word lastWord : lastWords) {
+                    System.out.println(lastWord);
+                    if (words.get(i).equals(lastWord)) {
+                        System.out.println(words.get(i));
+                        words.remove(i);
+                        i--;
+                    }
+                }
+            }
         }
     }
 
     private int calculateScore() {
-        HashSet<Word> words = allWords.get(turnNumber - 1);
+        List<Word> words = allWords.get(turnNumber);
         int turnScore = 0;
         for (Word word : words) {
             turnScore += word.getValue();
@@ -245,7 +256,7 @@ public class Scrabble {
         return rack;
     }
 
-    public List<HashSet<Word>> getAllWords() {
+    public List<List<Word>> getAllWords() {
         return allWords;
     }
 
@@ -255,6 +266,10 @@ public class Scrabble {
 
     public Square[][] getBoard() {
         return board;
+    }
+
+    public int getScore() {
+        return score;
     }
 
     /* Display */
@@ -275,14 +290,14 @@ public class Scrabble {
     public void printAllWords() {
         System.out.println("Words Played:");
         int i = 0;
-        for (Set<Word> words : allWords) {
+        for (List<Word> words : allWords) {
             System.out.println("Turn " + String.valueOf(i));
-            List<Word> w = words.stream().toList();
-            for (Word wo : w) {
+            for (Word wo : words) {
                 System.out.println("\t" + wo.getString());
             }
             i++;
         }
+        System.out.println("Score: " + score);
     }
 
     /* Main */
@@ -300,13 +315,15 @@ public class Scrabble {
         rack.add(Tile.A);
         rack.add(Tile.T);
         scrabble.takeTurn(rack, List.of(new Position(1,7), new Position(2, 7), new Position(3, 7), new Position(4, 7), new Position(5, 7), new Position(6, 7), new Position(7, 7)));
+        scrabble.printBoard();
         rack.remove(Tile.H);
         scrabble.takeTurn(rack, List.of(new Position(1, 8), new Position(1, 9), new Position(1, 10), new Position(1, 11), new Position(1, 12), new Position(1, 13)));;
         rack.clear();
-        rack.add(Tile.T);
+        rack.add(Tile.S);
+        rack.add(Tile.H);
+        rack.add(Tile.Y);
         scrabble.printBoard();
-        scrabble.takeTurn(rack, List.of(new Position(13, 8)));
-        scrabble.printBoard();
+//        scrabble.takeTurn(rack, List.of(new Position(8, 7), new Position(8, 8), new Position(8, 10)));
         scrabble.printAllWords();
     }
 }

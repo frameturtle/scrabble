@@ -27,21 +27,28 @@ public class Word {
         int wordMultiplier = 1;
         for (Square square : squares) {
             int baseValue = square.getTile().getValue();
-            if (square.getTimesUsed() == 0) {
+            if (square.getTimesUsed() <= 1) {
                 if (square.getType() == Square.Type.DOUBLE_LETTER) {
                     baseValue *= 2;
                 } else if (square.getType() == Square.Type.TRIPLE_LETTER) {
-                    baseValue += 3;
+                    baseValue *= 3;
                 } else if (square.getType() == Square.Type.DOUBLE_WORD) {
                     wordMultiplier += 1;
                 } else if (square.getType() == Square.Type.TRIPLE_WORD) {
                     wordMultiplier += 2;
                 }
             }
+//            System.out.println(square.getTile() + ", " + baseValue);
             value += baseValue;
+//            System.out.println("Value before multiplier: " + value);
         }
         value *= wordMultiplier;
+//        System.out.println("Value after multiplier: " + value);
         return value;
+    }
+
+    public List<Square> getSquares() {
+        return squares;
     }
 
     public String getString() {
@@ -69,14 +76,14 @@ public class Word {
             return false;
         }
     }
-
-    @Override
-    public int hashCode() {
-        int result = 0;
-        for (Square square : squares) {
-            int hash = square.getPosition().hashCode();
-            result += hash;
-        }
-        return result;
-    }
+//
+//    @Override
+//    public int hashCode() {
+////        int result = 0;
+////        for (Square square : squares) {
+////            int hash = square.getPosition().hashCode();
+////            result += hash;
+////        }
+////        return result;
+//    }
 }
