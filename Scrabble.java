@@ -139,9 +139,10 @@ public class Scrabble {
         } catch (ScrabbleException se) {
             System.out.println(se.getMessage() + " Please try again");
             takeBackTurn(placements);
+            return;
         }
         cullDuplicates();
-//        score += calculateScore();
+        score += calculateScore();
         turnNumber++;
         fillRack();
     }
@@ -161,22 +162,28 @@ public class Scrabble {
             for (Square square : row) {
                 checkWordsHelper(square, toWord);
             }
+            if (checkConditions(toWord) == 3) {
+                allWords.get(turnNumber).add(new Word(new ArrayList<>(toWord)));
+            }
+            toWord.clear();
         }
         for (int i = 0; i < board.length; i++) { // checking 'down' words
             List<Square> toWord = new ArrayList<>();
             for (Square[] squares : board) {
                 checkWordsHelper(squares[i], toWord);
             }
+            if (checkConditions(toWord) == 3) {
+                allWords.get(turnNumber).add(new Word(new ArrayList<>(toWord)));
+            }
+            toWord.clear();
         }
     }
 
     private void checkWordsHelper(Square square, List<Square> toWord) throws ScrabbleException {
-        int value = checkConditions(square, toWord);
+        int value = checkCondition(square, toWord);
         if (value != 0) {
             if (value == 1) {        // found a letter from a word in a different orientation
                 toWord.clear();
-            } else if (value == 2) {        // end of the word was reached, but it was not found in the word list
-                throw new ScrabbleException("Invalid Word(s).");
             } else if (value == 3) {        // end of the word was reached
                 allWords.get(turnNumber).add(new Word(new ArrayList<>(toWord)));
                 toWord.clear();
@@ -186,22 +193,30 @@ public class Scrabble {
         }
     }
 
-    private int checkConditions(Square square, List<Square> toWord) {
+    private int checkCondition(Square square, List<Square> toWord) throws ScrabbleException {
         if (square.isEmpty()) {
-            if (toWord.isEmpty()) {
-                return 0;
-            } else if (toWord.size() == 1 && tileHasNeighbors(toWord.getFirst())) {
-                return 1;
-            } else if (toWord.size() == 1 && !tileHasNeighbors(toWord.getFirst())) {
-                return 2;
-            } else if (!isWordValid(toWord)) {
-                return 2;
-            } else {
-                return 3;
-            }
+            return checkConditions(toWord);
         } else {
             return 4;
         }
+    }
+
+    private int checkConditions(List<Square> toWord) throws ScrabbleException {
+        if (toWord.isEmpty()) {
+            return 0;
+        } else if (toWord.size() == 1 && tileHasNeighbors(toWord.getFirst())) {
+            return 1;
+        } else if (toWord.size() == 1 && !tileHasNeighbors(toWord.getFirst())) {
+            throw new ScrabbleException("Tiles must be connected."); // tile not connected
+        } else if (!isWordValid(toWord)) {
+            throw new ScrabbleException("Invalid Word(s)."); // end of the word was reached, but it was not found in the word list
+        } else {
+            return 3;
+        }
+    }
+
+    private void checkEnd(List<Square> toWord) throws ScrabbleException {
+
     }
 
     private boolean tileHasNeighbors(Square square) {
@@ -340,13 +355,13 @@ public class Scrabble {
         rack.clear();
         rack.add(Tile.P);
         rack.add(Tile.A);
-        rack.add(Tile.R);
+        rack.add(Tile.Y);
         scrabble.takeTurn(rack, List.of(new Position(0,12), new Position(0, 13), new Position(0,14)));
         scrabble.printBoard();
         scrabble.printAllWords();
 
-        System.out.println(scrabble.rackString());
-        System.out.println(scrabble.getWordFinder().findAnagram(scrabble.rackString()));
+//        System.out.println(scrabble.rackString());
+//        System.out.println(scrabble.getWordFinder().findAnagram(scrabble.rackString()));
 
     }
 }
