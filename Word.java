@@ -1,3 +1,4 @@
+import java.util.HashMap;
 import java.util.List;
 
 public class Word {
@@ -45,6 +46,19 @@ public class Word {
         value *= wordMultiplier;
 //        System.out.println("Value after multiplier: " + value);
         return value;
+    }
+
+    public boolean isConnected(HashMap<Position, Square> map) {
+        for (Square square : squares) {
+            List<Position> neighbors = square.getNeighbors();
+            for (Position neighborPos : neighbors) {
+                Square neighbor = map.get(neighborPos);
+                if (!squares.contains(neighbor) && !neighbor.isEmpty()) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public List<Square> getSquares() {

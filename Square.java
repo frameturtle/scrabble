@@ -1,5 +1,6 @@
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class Square {
@@ -65,6 +66,23 @@ public class Square {
             neighbors.add(right);
         }
         return neighbors;
+    }
+
+    public int tileHasNeighbors(HashMap<Position, Square> map) {
+        int neighborCount = 0;
+        for (Position neighborPOS : neighbors) {
+            Square neighbor = map.get(neighborPOS);
+            if (!neighbor.isEmpty()) {
+                neighborCount++;
+            }
+        }
+        if (neighborCount == 0) {
+            return 0;
+        } else if (neighborCount == 1) {
+            return 1;
+        } else {
+            return 2;
+        }
     }
 
     public Type getType() {

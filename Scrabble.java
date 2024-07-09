@@ -1,8 +1,6 @@
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.sql.SQLOutput;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class Scrabble {
     private final Square[][] board;
@@ -14,7 +12,8 @@ public class Scrabble {
     private WordFinder wordFinder;
     public int uniqueTiles = 27;
     public int rackSize = 7;
-    private final List<List<Word>> allWords;
+    private final List<List<Word>> allWordsByTurn;
+    private final List<Word> allWords;
     private Set<String> wordList;
     private static final String wordListPath = "C:\\Users\\Katie George\\Documents\\python\\scrabble\\scrabble\\words.txt";
     private int turnNumber;
@@ -42,6 +41,7 @@ public class Scrabble {
         filledSquares = new ArrayList<>();
         rack = new ArrayList<>();
         map = new HashMap<>();
+        allWordsByTurn = new ArrayList<>();
         allWords = new ArrayList<>();
         board = makeBoard();
         bag = fillBag();
@@ -136,6 +136,11 @@ public class Scrabble {
                 square.setTile(tilesPlaced.get(i));
             }
             checkWords();
+            if (turnNumber > 0) {
+                checkConnections();
+            } else {
+                checkStartingStar();
+            }
         } catch (ScrabbleException se) {
             System.out.println(se.getMessage() + " Please try again");
             takeBackTurn(placements);
@@ -152,18 +157,18 @@ public class Scrabble {
             Square square = map.get(placement);
             square.resetTile();
         }
-        allWords.removeLast();
+        allWordsByTurn.removeLast();
     }
 
     private void checkWords() throws ScrabbleException {
-        allWords.add(new ArrayList<>());
+        allWordsByTurn.add(new ArrayList<>());
         for (Square[] row : board) { // checking 'across' words
             List<Square> toWord = new ArrayList<>();
             for (Square square : row) {
                 checkWordsHelper(square, toWord);
             }
             if (checkConditions(toWord) == 3) {
-                allWords.get(turnNumber).add(new Word(new ArrayList<>(toWord)));
+                allWordsByTurn.get(turnNumber).add(new Word(new ArrayList<>(toWord)));
             }
             toWord.clear();
         }
@@ -173,7 +178,7 @@ public class Scrabble {
                 checkWordsHelper(squares[i], toWord);
             }
             if (checkConditions(toWord) == 3) {
-                allWords.get(turnNumber).add(new Word(new ArrayList<>(toWord)));
+                allWordsByTurn.get(turnNumber).add(new Word(new ArrayList<>(toWord)));
             }
             toWord.clear();
         }
@@ -185,7 +190,7 @@ public class Scrabble {
             if (value == 1) {        // found a letter from a word in a different orientation
                 toWord.clear();
             } else if (value == 3) {        // end of the word was reached
-                allWords.get(turnNumber).add(new Word(new ArrayList<>(toWord)));
+                allWordsByTurn.get(turnNumber).add(new Word(new ArrayList<>(toWord)));
                 toWord.clear();
             } else {                        // end of the word has not been reached
                 toWord.add(square);
@@ -204,9 +209,9 @@ public class Scrabble {
     private int checkConditions(List<Square> toWord) throws ScrabbleException {
         if (toWord.isEmpty()) {
             return 0;
-        } else if (toWord.size() == 1 && tileHasNeighbors(toWord.getFirst())) {
+        } else if (toWord.size() == 1 && toWord.getFirst().tileHasNeighbors(map) >= 1) {
             return 1;
-        } else if (toWord.size() == 1 && !tileHasNeighbors(toWord.getFirst())) {
+        } else if (toWord.size() == 1 && toWord.getFirst().tileHasNeighbors(map) == 0) {
             throw new ScrabbleException("Tiles must be connected."); // tile not connected
         } else if (!isWordValid(toWord)) {
             throw new ScrabbleException("Invalid Word(s)."); // end of the word was reached, but it was not found in the word list
@@ -215,19 +220,17 @@ public class Scrabble {
         }
     }
 
-    private void checkEnd(List<Square> toWord) throws ScrabbleException {
-
-    }
-
-    private boolean tileHasNeighbors(Square square) {
-        boolean truthValue = false;
-        for (Position neighborPOS : square.getNeighbors()) {
-            Square neighbor = map.get(neighborPOS);
-            if (!neighbor.isEmpty()) {
-                truthValue = true;
+    private void checkStartingStar() throws ScrabbleException {
+        boolean touchesStar = false;
+        Word word = allWordsByTurn.get(turnNumber).getFirst();
+        for (Square square : word.getSquares()) {
+            if (square.getType() == Square.Type.START) {
+                touchesStar = true;
             }
         }
-        return truthValue;
+        if (!touchesStar) {
+            throw new ScrabbleException("First word must touch the starting star.");
+        }
     }
 
     private boolean isWordValid(List<Square> toWord) {
@@ -235,23 +238,29 @@ public class Scrabble {
         return wordList.contains(word.toString().toLowerCase()) && word.toString().length() > 1;
     }
 
-    private void cullDuplicates() {
-        if (turnNumber >= 1 && turnNumber == allWords.size() - 1) {
-            List<Word> words = allWords.get(turnNumber);
-            List<Word> lastWords = allWords.get(turnNumber - 1);
-            for (int i = 0; i < words.size(); i++) {
-                for (Word lastWord : lastWords) {
-                    if (words.get(i).equals(lastWord)) {
-                        words.remove(i);
-                        i--;
-                    }
-                }
+    private void checkConnections() throws ScrabbleException {
+        for (Word word : allWordsByTurn.getLast()) {
+            if (!word.isConnected(map)) {
+                throw new ScrabbleException("Words must be connected.");
             }
         }
     }
 
+    private void cullDuplicates() {
+        List<Word> words = allWordsByTurn.get(turnNumber);
+        for (int i = 0; i < words.size(); i++) {
+            for (Word lastWord : allWords) {
+                if (words.get(i).equals(lastWord)) {
+                    words.remove(i);
+                    i--;
+                }
+            }
+        }
+        allWords.addAll(words);
+    }
+
     private int calculateScore() {
-        List<Word> words = allWords.get(turnNumber);
+        List<Word> words = allWordsByTurn.get(turnNumber);
         int turnScore = 0;
         for (Word word : words) {
             turnScore += word.getValue();
@@ -277,7 +286,11 @@ public class Scrabble {
         return rack;
     }
 
-    public List<List<Word>> getAllWords() {
+    public List<List<Word>> getAllWordsByTurn() {
+        return allWordsByTurn;
+    }
+
+    public List<Word> getAllWords() {
         return allWords;
     }
 
@@ -315,7 +328,7 @@ public class Scrabble {
     public void printAllWords() {
         System.out.println("Words Played:");
         int i = 0;
-        for (List<Word> words : allWords) {
+        for (List<Word> words : allWordsByTurn) {
             System.out.println("Turn " + String.valueOf(i));
             for (Word wo : words) {
                 System.out.println("\t" + wo.getString());
