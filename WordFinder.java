@@ -11,9 +11,9 @@ public class WordFinder {
         this.wordList = wordList;
     }
 
-    public List<String> findAnagram(String rackStr) {
+    public List<String> findAnagram(String rackStr, int turnNumber) {
         List<String> anagrams = new ArrayList<>();
-        Pattern pattern = Pattern.compile(makePattern(rackStr));
+        Pattern pattern = Pattern.compile(choosePattern(rackStr, turnNumber));
         for (String word : wordList) {
             Matcher matcher = pattern.matcher(word);
             if (matcher.find() && word.length() > 1) {
@@ -23,8 +23,23 @@ public class WordFinder {
         return anagrams;
     }
 
-    public String makePattern(String rackStr) {
+    private String choosePattern(String rackStr, int turnNumber) {
+        if (turnNumber == 0) {
+            return "^" + makePatternBase(rackStr) + "[" + rackStr + "]*$";
+        }
+        return "^" + makePatternBase(rackStr) + "[" + rackStr + "]*$";
+    }
+
+    private String makePattern(String rackStr) {
         String makePattern = "^{2,4}[habit]";
+
+
+//        "([" + rackStr + "])*[habit]$";
+        return makePattern;
+    }
+
+    private String makePatternBase(String rackStr) {
+        String patternBase = "";
         for (int i = 0; i < rackStr.length(); i++) {
             char c = rackStr.charAt(i);
             int occurences = 0;
@@ -34,13 +49,12 @@ public class WordFinder {
                 }
             }
             if (occurences == 1) {
-                makePattern += "(?!.*" + c + ".*" + c + ")";
+                patternBase += "(?!.*" + c + ".*" + c + ")";
             } else {
-                makePattern += "(" + c + "{0," + String.valueOf(occurences) + "})";
+                patternBase += "(" + c + "{0," + String.valueOf(occurences) + "})";
             }
         }
-        makePattern += "([" + rackStr + "])*[habit]$";
-        return makePattern;
+        return patternBase;
     }
 
     public Set<String> getWordList() {
