@@ -135,6 +135,11 @@ public class Scrabble {
     public void takeTurn(List<Tile> tilesPlaced, List<Position> placements) {
         try {
             for (int i = 0; i < tilesPlaced.size(); i++) {
+                if (rack.contains(tilesPlaced.get(i))) {
+                    rack.remove(tilesPlaced.get(i));
+                } else {
+                    throw new ScrabbleException("Tile(s) not in rack.");
+                }
                 Square square = map.get(placements.get(i));
                 square.setTile(tilesPlaced.get(i));
             }
@@ -149,7 +154,6 @@ public class Scrabble {
             takeBackTurn(placements);
             return;
         }
-        rack.removeAll(tilesPlaced);
         cullDuplicates();
         score += calculateScore();
         activeTurnNumber++;

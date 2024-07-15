@@ -50,11 +50,12 @@ public class ScrabbleCLI {
                 System.out.println("Bag has no more tiles");
                 noQuit = false;
                 break;
-            } else if (game.getScore() >= 200) {
+            } else if (game.getScore() >= 60) {
                 System.out.println("You won!");
+                game.printAllWords();
                 noQuit = false;
                 break;
-            } else if (game.getScore() >= 10) {
+            } else if (game.getTurnNumber() >= 10) {
                 System.out.println("You lost!");
             }
             System.out.println("\nRack: " + game.getRack() + "\nScore: " + game.getScore() + "\nTurns: " + game.getTurnNumber() + "\n");
